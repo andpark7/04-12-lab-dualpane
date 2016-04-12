@@ -6,10 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 public class MainActivity extends AppCompatActivity implements MoviesFragment.OnMovieSelectedListener {
 
     private static final String TAG = "MainActivity";
+
+    private boolean tf;
 
 
     @Override
@@ -17,13 +20,23 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        MoviesFragment fragment = (MoviesFragment)getSupportFragmentManager().findFragmentByTag("MoviesFragment");
-        if(fragment == null) {
+        FrameLayout fl = (FrameLayout) findViewById(R.id.container_right);
+
+        tf = fl != null && fl.getVisibility() == View.VISIBLE;
+        MoviesFragment fragment = (MoviesFragment) getSupportFragmentManager().findFragmentByTag("MoviesFragment");
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        if (fragment == null) {
             fragment = new MoviesFragment();
         }
-
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.container, fragment, "MoviesFragment");
+        if(tf) {
+            DetailFragment detailFragment = (DetailFragment) getSupportFragmentManager().findFragmentByTag("DetailFragment");
+            if(detailFragment == null) {
+                detailFragment = new DetailFragment();
+            }
+            ft.replace(R.id.container_left, fragment, "MoviesFragment");
+        } else {
+            ft.replace(R.id.container, fragment, "MoviesFragment");
+        }
         ft.commit();
     }
 
@@ -58,10 +71,15 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         DetailFragment detailFragment = new DetailFragment();
         detailFragment.setArguments(bundle);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, detailFragment, null)
-                .addToBackStack(null)
-                .commit();
-
+        if(tf) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container_right, detailFragment, null)
+                    .commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, detailFragment, null)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 }
